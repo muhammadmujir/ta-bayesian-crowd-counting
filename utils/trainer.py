@@ -5,14 +5,15 @@ from utils.logger import setlogger
 
 
 class Trainer(object):
-    def __init__(self, args):
+    def __init__(self, args, print_info = True):
         sub_dir = datetime.strftime(datetime.now(), '%m%d-%H%M%S')  # prepare saving path
         self.save_dir = os.path.join(args.save_dir, sub_dir)
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
-        setlogger(os.path.join(self.save_dir, 'train.log'))  # set logger
-        for k, v in args.__dict__.items():  # save args
-            logging.info("{}: {}".format(k, v))
+        if print_info:
+            setlogger(os.path.join(self.save_dir, 'train.log'))  # set logger
+            for k, v in args.__dict__.items():  # save args
+                logging.info("{}: {}".format(k, v))
         self.args = args
 
     def setup(self):

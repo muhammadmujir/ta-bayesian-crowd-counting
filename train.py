@@ -21,9 +21,9 @@ def parse_args():
                         help='max models num to save ')
     parser.add_argument('--max-epoch', type=int, default=1000,
                         help='max training epoch')
-    parser.add_argument('--val-epoch', type=int, default=5,
+    parser.add_argument('--val-epoch', type=int, default=1,
                         help='the num of steps to log training information')
-    parser.add_argument('--val-start', type=int, default=600,
+    parser.add_argument('--val-start', type=int, default=0,
                         help='the epoch start to val')
 
     parser.add_argument('--batch-size', type=int, default=1,
@@ -45,6 +45,8 @@ def parse_args():
                         help='sigma for likelihood')
     parser.add_argument('--background-ratio', type=float, default=1.0,
                         help='background ratio')
+    
+    parser.add_argument('--print-freq', type=int, default=1, help='print frequency')
     args = parser.parse_args()
     return args
 
@@ -53,6 +55,6 @@ if __name__ == '__main__':
     args = parse_args()
     torch.backends.cudnn.benchmark = True
     os.environ['CUDA_VISIBLE_DEVICES'] = args.device.strip()  # set vis gpu
-    trainer = RegTrainer(args)
+    trainer = RegTrainer(args, False)
     trainer.setup()
     trainer.train()
