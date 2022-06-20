@@ -28,9 +28,7 @@ def train_collate(batch):
 
 def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(path, filename))
-    print("save")
     if is_best:
-        print("best")
         shutil.copyfile(os.path.join(path, filename), os.path.join(path, 'model_best.pth.tar'))  
 
 resultCSV = None
@@ -43,7 +41,6 @@ class RegTrainer(Trainer):
         global resultPath, resultCSV
         args = self.args
         resultPath = args.save_dir
-        print("Result Path: ", resultPath)
         
         if torch.cuda.is_available():
             self.device = torch.device("cuda")
@@ -218,6 +215,7 @@ class RegTrainer(Trainer):
         # self.save_list.append(save_path)  # control the number of saved models
 
     def val_epoch(self):
+        print("---------begin test----------")
         epoch_start = time.time()
         self.model.eval()  # Set model to evaluate mode
         epoch_res = []
