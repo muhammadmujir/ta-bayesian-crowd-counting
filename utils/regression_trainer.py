@@ -87,7 +87,7 @@ class RegTrainer(Trainer):
         if args.resume:
             if os.path.isfile(args.resume):
                 print("=> loading checkpoint '{}'".format(args.resume))
-                if args.gpu != 'None' and args.gpu != 'TPU':
+                if torch.cuda.is_available():
                     checkpoint = torch.load(args.resume)
                 else:
                     checkpoint = torch.load(args.resume, map_location=torch.device('cpu'))
