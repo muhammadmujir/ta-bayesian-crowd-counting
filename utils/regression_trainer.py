@@ -36,7 +36,9 @@ class RegTrainer(Trainer):
             assert self.device_count == 1
             logging.info('using {} gpus'.format(self.device_count))
         else:
-            raise Exception("gpu is not available")
+            self.device = torch.device("cpu")
+            self.device_count = 1
+            # raise Exception("gpu is not available")
 
         self.downsample_ratio = args.downsample_ratio
         self.datasets = {x: Crowd(os.path.join(args.data_dir, x),
@@ -86,6 +88,7 @@ class RegTrainer(Trainer):
             logging.info('-'*5 + 'Epoch {}/{}'.format(epoch, args.max_epoch - 1) + '-'*5)
             self.epoch = epoch
             self.train_eopch()
+            break
             if epoch % args.val_epoch == 0 and epoch >= args.val_start:
                 self.val_epoch()
 
@@ -100,10 +103,16 @@ class RegTrainer(Trainer):
         for step, (inputs, points, targets, st_sizes) in enumerate(self.dataloaders['train']):
             inputs = inputs.to(self.device)
             st_sizes = st_sizes.to(self.device)
+            # print("POINTS: ", points)
+            # print("POINTS SHAPE: ", len(points))
+            # print("ST_SIZE: ", st_sizes)
             gd_count = np.array([len(p) for p in points], dtype=np.float32)
+            # print("GD COUNT: ", gd_count)
+            
             points = [p.to(self.device) for p in points]
             targets = [t.to(self.device) for t in targets]
-
+            # print("TARGET: ", targets)
+            
             with torch.set_grad_enabled(True):
                 outputs = self.model(inputs)
                 prob_list = self.post_prob(points, st_sizes)
@@ -119,6 +128,7 @@ class RegTrainer(Trainer):
                 epoch_loss.update(loss.item(), N)
                 epoch_mse.update(np.mean(res * res), N)
                 epoch_mae.update(np.mean(abs(res)), N)
+                break
 
         logging.info('Epoch {} Train, Loss: {:.2f}, MSE: {:.2f} MAE: {:.2f}, Cost {:.1f} sec'
                      .format(self.epoch, epoch_loss.get_avg(), np.sqrt(epoch_mse.get_avg()), epoch_mae.get_avg(),

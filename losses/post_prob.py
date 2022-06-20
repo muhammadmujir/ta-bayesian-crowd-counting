@@ -19,16 +19,36 @@ class Post_Prob(Module):
     def forward(self, points, st_sizes):
         num_points_per_image = [len(points_per_image) for points_per_image in points]
         all_points = torch.cat(points, dim=0)
+        print("NUM_POINTS: ", num_points_per_image)
+        print("POINTS SHAPE: ", len(points[0]))
+        print("POINTS SHAPE: ", len(points[0][1]))
+        print("ALL_POINTS SHAPE: ", all_points.shape)
 
         if len(all_points) > 0:
             x = all_points[:, 0].unsqueeze_(1)
             y = all_points[:, 1].unsqueeze_(1)
+            print("X: ", x)
+            print("Y: ", y)
+            print("X SHAPE: ", x.shape)
+            print("Y SHAPE: ", y.shape)
+            print("COORD: ", self.cood)
+            print("COORD SHAPE: ", self.cood.shape)
             x_dis = -2 * torch.matmul(x, self.cood) + x * x + self.cood * self.cood
             y_dis = -2 * torch.matmul(y, self.cood) + y * y + self.cood * self.cood
+            print("X_DIST: ", x_dis)
+            print("Y_DIST: ", y_dis)
+            print("X_DIS SHAPE: ", x_dis.shape)
+            print("Y_DIS SHAPE: ", y_dis.shape)
             y_dis.unsqueeze_(2)
             x_dis.unsqueeze_(1)
+            print("X_DIS SHAPE: ", x_dis.shape)
+            print("Y_DIS SHAPE: ", y_dis.shape)
             dis = y_dis + x_dis
+            print("SUM DIS: ", dis)
+            print("SUM DIS SHAPE: ", dis.shape)
             dis = dis.view((dis.size(0), -1))
+            print("DIS VIEW: ", dis)
+            print("DIS VIEW SHAPE: ", dis.shape)
 
             dis_list = torch.split(dis, num_points_per_image)
             prob_list = []
@@ -39,10 +59,13 @@ class Post_Prob(Module):
                         bg_dis = (st_size * self.bg_ratio) ** 2 / (min_dis + 1e-5)
                         dis = torch.cat([dis, bg_dis], 0)  # concatenate background distance to the last
                     dis = -dis / (2.0 * self.sigma ** 2)
+                    print("FINAL DIS: ", len(dis[dis>0]))
                     prob = self.softmax(dis)
+                    print("SOFTMAX: ", prob)
                 else:
                     prob = None
                 prob_list.append(prob)
+            print("PROB LIST: {}:{}".format(len(prob),len(prob[0])))
         else:
             prob_list = []
             for _ in range(len(points)):
