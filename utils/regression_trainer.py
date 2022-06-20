@@ -86,6 +86,7 @@ class RegTrainer(Trainer):
         #     elif suf == 'pth':
         #         self.model.load_state_dict(torch.load(args.resume, self.device))
         
+        self.best_prec = 1e8
         if args.resume:
             if os.path.isfile(args.resume):
                 print("=> loading checkpoint '{}'".format(args.resume))
@@ -100,7 +101,6 @@ class RegTrainer(Trainer):
                 print("=> loaded checkpoint '{}' (epoch {})"
                       .format(args.resume, checkpoint['epoch']))
             else:
-                self.best_prec = None
                 print("=> no checkpoint found at '{}'".format(args.resyne))
                 
         self.post_prob = Post_Prob(args.sigma,
@@ -139,15 +139,14 @@ class RegTrainer(Trainer):
             self.train_eopch(epoch)
             if epoch % args.val_epoch == 0 and epoch >= args.val_start:
                 prec = self.val_epoch()
-                is_best = prec < self.best_prec if self.best_prec != None else True
-                
-                current_best_prec = min(prec, self.best_prec)
-                print(' * best MAE {mae:.3f} '.format(mae=current_best_prec))
+                is_best = prec < self.best_prec
+                self.best_prec = min(prec, self.best_prec)
+                print(' * best MAE {mae:.3f} '.format(mae=self.best_prec))
                 save_checkpoint({
                     'epoch': epoch + 1,
                     'arch': args.resume,
                     'state_dict': self.model.state_dict(),
-                    'best_prec1': current_best_prec,
+                    'best_prec1': self.best_prec,
                     'optimizer' : self.optimizer.state_dict(),
                 }, is_best, resultPath)
             resultCSV.write('\n')
